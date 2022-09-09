@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class MainTest {
+class MainTest {
     @ParameterizedTest
     @ArgumentsSource(ResourceProvider.Diff.class)
     void shouldCorrectlyDecideIfItIsOneMethodChange(ResourceProvider.TestResource sources)

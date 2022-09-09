@@ -1,0 +1,19 @@
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11 for running tests
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Run test phase
+        run: mvn test

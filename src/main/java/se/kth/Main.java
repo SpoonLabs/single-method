@@ -6,6 +6,7 @@ import gumtree.spoon.diff.Diff;
 import gumtree.spoon.diff.operations.Operation;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.path.CtRole;
 
 import java.io.File;
 import java.util.HashSet;
@@ -44,6 +45,7 @@ public class Main {
     }
 
     private static boolean shouldBeIgnored(CtElement element) {
-        return element instanceof CtWrapper;
+        return element instanceof CtWrapper
+                || (element.getParent() instanceof CtMethod && element.getRoleInParent() == CtRole.TYPE);
     }
 }

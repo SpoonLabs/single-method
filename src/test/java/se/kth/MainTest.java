@@ -1,7 +1,5 @@
 package se.kth;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -13,13 +11,24 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class MainTest {
     @ParameterizedTest
-    @ArgumentsSource(ResourceProvider.Diff.class)
-    void shouldCorrectlyDecideIfItIsOneMethodChange(ResourceProvider.TestResource sources)
+    @ArgumentsSource(ResourceProvider.TrueCase.class)
+    void shouldClassifyDiffsAs_ASingleMethodChange(ResourceProvider.TestResource sources)
             throws Exception {
         boolean isOneMethodChange = Main.api(sources.left, sources.right);
-        assertEquals(sources.expected, isOneMethodChange);
+        assertTrue(isOneMethodChange);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(ResourceProvider.FalseCase.class)
+    void shouldClassifyDiffsAs_NotASingleMethodChange(ResourceProvider.TestResource sources)
+            throws Exception {
+        boolean isOneMethodChange = Main.api(sources.left, sources.right);
+        assertFalse(isOneMethodChange);
     }
 }
 
@@ -29,20 +38,17 @@ class ResourceProvider {
         File left;
         File right;
 
-        boolean expected;
-
-        private TestResource(String dir, File left, File right, boolean expected) {
+        private TestResource(String dir, File left, File right) {
             this.dir = dir;
             this.left = left;
             this.right = right;
-            this.expected = expected;
         }
 
-        private static TestResource fromTestDirectory(File testDir, boolean expected) {
+        private static TestResource fromTestDirectory(File testDir) {
             String dir = testDir.getName();
             File left = testDir.toPath().resolve("left.java").toFile();
             File right = testDir.toPath().resolve("right.java").toFile();
-            return new TestResource(dir, left, right, expected);
+            return new TestResource(dir, left, right);
         }
 
         @Override
@@ -51,20 +57,24 @@ class ResourceProvider {
         }
     }
 
-    static class Diff implements ArgumentsProvider {
-
+    static class TrueCase implements ArgumentsProvider {
         @Override
         public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
-            return Stream.concat(
-                    getFilesInDirectory(new File("src/test/resources/true"), true),
-                    getFilesInDirectory(new File("src/test/resources/false"), false));
+            return getFilesInDirectory(new File("src/test/resources/true"));
         }
+    }
 
-        private static Stream<? extends Arguments> getFilesInDirectory(File dir, boolean expected) {
-            return Arrays.stream(Objects.requireNonNull(dir.listFiles()))
-                    .filter(File::isDirectory)
-                    .map(diffDir -> TestResource.fromTestDirectory(diffDir, expected))
-                    .map(Arguments::of);
-        }
+    static class FalseCase implements ArgumentsProvider {
+            @Override
+            public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
+                return getFilesInDirectory(new File("src/test/resources/false"));
+            }
+    }
+
+    private static Stream<? extends Arguments> getFilesInDirectory(File dir) {
+        return Arrays.stream(Objects.requireNonNull(dir.listFiles()))
+                .filter(File::isDirectory)
+                .map(TestResource::fromTestDirectory)
+                .map(Arguments::of);
     }
 }

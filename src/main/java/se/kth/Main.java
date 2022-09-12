@@ -1,9 +1,12 @@
 package se.kth;
 
 import gumtree.spoon.AstComparator;
+import gumtree.spoon.builder.CtWrapper;
 import gumtree.spoon.diff.Diff;
 import gumtree.spoon.diff.operations.Operation;
+import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.path.CtRole;
 
 import java.io.File;
 import java.util.HashSet;
@@ -28,16 +31,21 @@ public class Main {
         Diff diff = new AstComparator().compare(original, patched);
         return isInsideOnlyOneMethod(diff.getRootOperations());
     }
-
+    
     private static boolean isInsideOnlyOneMethod(List<Operation> operations) {
         Set<CtMethod> methods = new HashSet<>();
         for (Operation operation : operations) {
-            if (operation.getSrcNode() != null) {
+            if (operation.getSrcNode() != null && !shouldBeIgnored(operation.getSrcNode())) {
                 CtMethod<?> method = operation.getSrcNode().getParent(CtMethod.class);
                 methods.add(method);
             }
         }
 
         return methods.size() == 1 && !methods.contains(null);
+    }
+
+    private static boolean shouldBeIgnored(CtElement element) {
+        return element instanceof CtWrapper
+                || (element.getParent() instanceof CtMethod && element.getRoleInParent() == CtRole.TYPE);
     }
 }

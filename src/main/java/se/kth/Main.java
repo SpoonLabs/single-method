@@ -46,6 +46,8 @@ public class Main {
 
     private static boolean shouldBeIgnored(CtElement element) {
         return element instanceof CtWrapper
-                || (element.getParent() instanceof CtMethod && element.getRoleInParent() == CtRole.TYPE);
+                || (element.getParent() instanceof CtMethod && (
+                        element.getRoleInParent() == CtRole.TYPE
+                        || element.getRoleInParent() == CtRole.ANNOTATION));
     }
 }

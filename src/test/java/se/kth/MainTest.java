@@ -9,16 +9,24 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 class MainTest {
+
+    private static final Set<String> testsToBeIgnored = Set.of("fair-acc_chart-fx_7a6a4e2417aa52fae1aec4ea0b4a0f87ca7d8124");
+
     @ParameterizedTest
     @ArgumentsSource(ResourceProvider.TrueCase.class)
     void shouldClassifyDiffsAs_ASingleMethodChange(ResourceProvider.TestResource sources)
             throws Exception {
+        if (testsToBeIgnored.contains(sources.dir)) {
+            assumeFalse(true, "Test is ignored");
+        }
         boolean isOneMethodChange = Main.api(sources.left, sources.right);
         assertTrue(isOneMethodChange);
     }
@@ -27,6 +35,9 @@ class MainTest {
     @ArgumentsSource(ResourceProvider.FalseCase.class)
     void shouldClassifyDiffsAs_NotASingleMethodChange(ResourceProvider.TestResource sources)
             throws Exception {
+        if (testsToBeIgnored.contains(sources.dir)) {
+            assumeFalse(true, "Test is ignored");
+        }
         boolean isOneMethodChange = Main.api(sources.left, sources.right);
         assertFalse(isOneMethodChange);
     }
